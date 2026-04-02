@@ -1,0 +1,9 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api 'org.springframework:spring-web'
+    api 'jakarta.validation:jakarta.validation-api'
+    api 'com.fasterxml.jackson.core:jackson-annotations'
+}

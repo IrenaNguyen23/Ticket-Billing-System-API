@@ -1,0 +1,49 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: PAYMENT-SERVICE
+  datasource:
+    url: jdbc:postgresql://localhost:5432/payment_db
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: payment-service
+      auto-offset-reset: earliest
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+app:
+  kafka:
+    topics:
+      payment-requested: payment-requested
+      payment-processed: payment-processed
+      payment-failed: payment-failed
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+security:
+  jwt:
+    secret: "change-this-secret-to-32-bytes-minimum"
+
+eureka:
+  client:
+    enabled: false

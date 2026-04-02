@@ -1,0 +1,57 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: BILLING-SERVICE
+  datasource:
+    url: jdbc:postgresql://localhost:5432/billing_db
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+  redis:
+    host: localhost
+    port: 6379
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: billing-service
+      auto-offset-reset: earliest
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+app:
+  pricing:
+    base-url: https://pricing-api.example.com
+  kafka:
+    topics:
+      trip-completed: trip-completed
+      payment-requested: payment-requested
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      pricing-api:
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        slidingWindowSize: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+eureka:
+  client:
+    enabled: false
