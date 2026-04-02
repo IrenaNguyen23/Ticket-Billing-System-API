@@ -4,16 +4,22 @@ plugins {
 
 dependencies {
     implementation project(':common')
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.kafka:spring-kafka'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.kafka:spring-kafka'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-    implementation 'org.flywaydb:flyway-core'
+
+    // Flyway 10+ yêu cầu dialect driver riêng cho PostgreSQL
+    implementation "org.flywaydb:flyway-core:${flywayVersion}"
+    implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
+
     implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
-    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
-    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+    runtimeOnly    "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+    runtimeOnly    "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
     runtimeOnly 'org.postgresql:postgresql'
 }

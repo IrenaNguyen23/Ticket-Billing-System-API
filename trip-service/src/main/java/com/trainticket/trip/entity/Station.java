@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -32,9 +33,9 @@ public class Station {
 
     private String zone;
 
-    private Double latitude;
+    private BigDecimal latitude;
 
-    private Double longitude;
+    private BigDecimal longitude;
 
     @Column(name = "is_active")
     private boolean active;

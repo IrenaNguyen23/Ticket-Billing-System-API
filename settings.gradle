@@ -1,2 +1,10 @@
 rootProject.name = 'train-ticket-system'
-include 'api-gateway', 'auth-service', 'trip-service', 'billing-service', 'payment-service', 'common'
+
+include(
+    'common',
+    'api-gateway',
+    'auth-service',
+    'trip-service',
+    'billing-service',
+    'payment-service'
+)

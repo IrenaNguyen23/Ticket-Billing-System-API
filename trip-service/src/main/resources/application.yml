@@ -10,7 +10,7 @@ spring:
     password: postgres
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -45,7 +45,7 @@ management:
 
 security:
   jwt:
-    secret: "change-this-secret-to-32-bytes-minimum"
+    secret: "7194d7d21bba9b8d1d140092251c95eea857cffa6a924a23b424b544d87cd771"
 
 eureka:
   client:

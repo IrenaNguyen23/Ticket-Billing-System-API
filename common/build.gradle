@@ -1,9 +1,21 @@
 plugins {
     id 'java-library'
+    id 'io.spring.dependency-management'
+}
+
+// Common là thư viện thuần, không phải Spring Boot application
+// Không cần bootJar → Gradle sẽ tự tạo jar bình thường
+jar {
+    enabled = true
 }
 
 dependencies {
-    api 'org.springframework:spring-web'
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter'         
+    api 'org.springframework.boot:spring-boot-starter-validation'
     api 'jakarta.validation:jakarta.validation-api'
     api 'com.fasterxml.jackson.core:jackson-annotations'
+
+    compileOnly         "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }
