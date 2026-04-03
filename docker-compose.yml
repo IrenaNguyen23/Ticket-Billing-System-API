@@ -2,10 +2,10 @@ services:
   postgres:
     image: postgres:14
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ./docker/init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql:ro
     healthcheck:
@@ -17,7 +17,12 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   zookeeper:
@@ -26,7 +31,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
-      - "2181:2181"
+      - "${ZOOKEEPER_PORT:-2181}:2181"
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "2181"]
       interval: 5s
@@ -39,41 +44,57 @@ services:
       zookeeper:
         condition: service_healthy
     ports:
-      - "9092:9092"
+      - "${KAFKA_PORT:-9092}:9092"
+      - "${KAFKA_HOST_PORT:-29092}:29092"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_JMX_PORT: ${KAFKA_JMX_PORT}
+      KAFKA_JMX_HOSTNAME: ${KAFKA_JMX_HOSTNAME}
 
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENERS: ${KAFKA_LISTENERS}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
+      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
 
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+
+  newrelic-infra:
+    image: newrelic/infrastructure:latest
+    privileged: true
+    environment:
+      NRIA_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY}
+      NRIA_DISPLAY_NAME: ${NRIA_DISPLAY_NAME}
+    volumes:
+      - ./newrelic/kafka-config.yml:/etc/newrelic-infra/integrations.d/kafka-config.yml:ro
+    depends_on:
+      kafka:
+        condition: service_started
 
   auth-service:
     build:
       context: .
       dockerfile: auth-service/Dockerfile
     ports:
-      - "8081:8081"
+      - "${AUTH_SERVICE_PORT:-8081}:8081"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+    env_file:
+      - .env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_REDIS_HOST: redis
+      NEW_RELIC_APP_NAME: ${NEW_RELIC_APP_NAME_AUTH}
+    volumes:
+      - ./newrelic/newrelic.yml:/opt/newrelic/newrelic.yml:ro
 
   trip-service:
     build:
       context: .
       dockerfile: trip-service/Dockerfile
     ports:
-      - "8082:8082"
+      - "${TRIP_SERVICE_PORT:-8082}:8082"
     depends_on:
       postgres:
         condition: service_healthy
@@ -81,19 +102,19 @@ services:
         condition: service_started
       kafka:
         condition: service_started
+    env_file:
+      - .env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/trip_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      NEW_RELIC_APP_NAME: ${NEW_RELIC_APP_NAME_TRIP}
+    volumes:
+      - ./newrelic/newrelic.yml:/opt/newrelic/newrelic.yml:ro
 
   billing-service:
     build:
       context: .
       dockerfile: billing-service/Dockerfile
     ports:
-      - "8083:8083"
+      - "${BILLING_SERVICE_PORT:-8083}:8083"
     depends_on:
       postgres:
         condition: service_healthy
@@ -101,36 +122,37 @@ services:
         condition: service_started
       kafka:
         condition: service_started
+    env_file:
+      - .env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/billing_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      NEW_RELIC_APP_NAME: ${NEW_RELIC_APP_NAME_BILLING}
+    volumes:
+      - ./newrelic/newrelic.yml:/opt/newrelic/newrelic.yml:ro
 
   payment-service:
     build:
       context: .
       dockerfile: payment-service/Dockerfile
     ports:
-      - "8084:8084"
+      - "${PAYMENT_SERVICE_PORT:-8084}:8084"
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_started
+    env_file:
+      - .env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/payment_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      NEW_RELIC_APP_NAME: ${NEW_RELIC_APP_NAME_PAYMENT}
+    volumes:
+      - ./newrelic/newrelic.yml:/opt/newrelic/newrelic.yml:ro
 
   api-gateway:
     build:
       context: .
       dockerfile: api-gateway/Dockerfile
     ports:
-      - "8080:8080"
+      - "${API_GATEWAY_PORT:-8080}:8080"
     depends_on:
       auth-service:
         condition: service_started
@@ -140,9 +162,9 @@ services:
         condition: service_started
       payment-service:
         condition: service_started
+    env_file:
+      - .env
     environment:
-      SPRING_REDIS_HOST: redis
-      AUTH_SERVICE_URL: http://auth-service:8081
-      TRIP_SERVICE_URL: http://trip-service:8082
-      BILLING_SERVICE_URL: http://billing-service:8083
-      PAYMENT_SERVICE_URL: http://payment-service:8084
+      NEW_RELIC_APP_NAME: ${NEW_RELIC_APP_NAME_GATEWAY}
+    volumes:
+      - ./newrelic/newrelic.yml:/opt/newrelic/newrelic.yml:ro

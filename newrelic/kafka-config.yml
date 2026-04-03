@@ -1,0 +1,14 @@
+integrations:
+  - name: nri-kafka
+    env:
+      CLUSTER_NAME: "ticket-kafka"
+      AUTODISCOVER_STRATEGY: bootstrap
+      BOOTSTRAP_BROKER_HOST: kafka
+      BOOTSTRAP_BROKER_KAFKA_PORT: 9092
+      BOOTSTRAP_BROKER_JMX_PORT: 9999
+      METRICS: "true"
+      INVENTORY: "true"
+    interval: 15s
+    labels:
+      env: local
+      role: kafka

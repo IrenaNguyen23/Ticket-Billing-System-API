@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${API_GATEWAY_PORT}
 
 spring:
   main:
@@ -8,29 +8,29 @@ spring:
   application:
     name: api-gateway
   redis:
-    host: redis
-    port: 6379
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
   cloud:
     gateway:
       routes:
         - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          uri: ${AUTH_SERVICE_URL}
           predicates:
             - Path=/api/v1/auth/**
         - id: trip-service
-          uri: ${TRIP_SERVICE_URL:http://localhost:8082}
+          uri: ${TRIP_SERVICE_URL}
           predicates:
             - Path=/api/v1/trips/**
           filters:
             - JwtAuthFilter
         - id: billing-service
-          uri: ${BILLING_SERVICE_URL:http://localhost:8083}
+          uri: ${BILLING_SERVICE_URL}
           predicates:
             - Path=/api/v1/billing/**
           filters:
             - JwtAuthFilter
         - id: payment-service
-          uri: ${PAYMENT_SERVICE_URL:http://localhost:8084}
+          uri: ${PAYMENT_SERVICE_URL}
           predicates:
             - Path=/api/v1/payments/**
           filters:
@@ -50,7 +50,7 @@ management:
 
 security:
   jwt:
-    secret: "7194d7d21bba9b8d1d140092251c95eea857cffa6a924a23b424b544d87cd771"
+    secret: ${SECURITY_JWT_SECRET}
 
 eureka:
   client:

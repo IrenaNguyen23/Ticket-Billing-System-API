@@ -1,0 +1,130 @@
+﻿# This file configures the New Relic agent. New Relic monitors
+# Java applications with deep visibility and low overhead. For details and additional
+# configuration options visit https://docs.newrelic.com/docs/agents/java-agent/configuration/java-agent-configuration-config-file.
+#
+# This section is for settings common to all environments.
+# Do not add anything above this next line.
+common: &default_settings
+
+  # ============================== LICENSE KEY ===============================
+  # You must specify the license key associated with your New Relic account.
+  # Prefer setting via NEW_RELIC_LICENSE_KEY environment variable.
+  license_key: ''
+
+  # Agent Enabled
+  agent_enabled: true
+
+  # Set the name of your application as you'd like it show up in New Relic.
+  # Prefer setting via NEW_RELIC_APP_NAME environment variable.
+  app_name: 'Ticket-System'
+
+  high_security: false
+  enable_auto_app_naming: false
+  enable_auto_transaction_naming: true
+
+  log_level: info
+  audit_mode: false
+  log_file_count: 1
+  log_limit_in_kbytes: 0
+  log_daily: false
+  log_file_name: newrelic_agent.log
+
+  application_logging:
+    enabled: true
+    forwarding:
+      enabled: true
+    metrics:
+      enabled: true
+
+  max_stack_trace_lines: 30
+
+  attributes:
+    enabled: true
+
+  transaction_tracer:
+    enabled: true
+    transaction_threshold: apdex_f
+    record_sql: obfuscated
+    log_sql: false
+    stack_trace_threshold: 0.5
+    explain_enabled: true
+    explain_threshold: 0.5
+    top_n: 20
+
+  error_collector:
+    enabled: true
+    ignore_errors: akka.actor.ActorKilledException
+    ignore_status_codes: 404
+
+  transaction_events:
+    enabled: true
+    max_samples_stored: 2000
+
+  distributed_tracing:
+    enabled: true
+    exclude_newrelic_header: false
+
+  span_events:
+    enabled: true
+    max_samples_stored: 2000
+    attributes:
+      enabled: true
+
+  cross_application_tracer:
+    enabled: false
+
+  thread_profiler:
+    enabled: true
+
+  browser_monitoring:
+    auto_instrument: true
+
+  class_transformer:
+    kafka-clients-metrics:
+      enabled: false
+    kafka-clients-node-metrics:
+      enabled: true
+    kafka-clients-config:
+      enabled: true
+    kafka-connect-spans:
+      enabled: true
+    com.newrelic.instrumentation.servlet-user:
+      enabled: false
+    com.newrelic.instrumentation.spring-aop-2:
+      enabled: false
+    com.newrelic.instrumentation.jdbc-resultset:
+      enabled: false
+    classloader_excludes:
+      groovy.lang.GroovyClassLoader$InnerLoader,
+      org.codehaus.groovy.runtime.callsite.CallSiteClassLoader,
+      com.collaxa.cube.engine.deployment.BPELClassLoader,
+      org.springframework.data.convert.ClassGeneratingEntityInstantiator$ObjectInstantiatorClassGenerator,
+      org.mvel2.optimizers.impl.asm.ASMAccessorOptimizer$ContextClassLoader,
+      gw.internal.gosu.compiler.SingleServingGosuClassLoader,
+
+  jfr:
+    enabled: false
+    audit_logging: false
+
+  labels:
+    #label_name: label_value
+
+# Application Environments
+# ------------------------------------------
+# Use -Dnewrelic.environment=<environment> to set the environment.
+# Default environment is production.
+
+development:
+  <<: *default_settings
+  app_name: 'Ticket-System (Development)'
+
+test:
+  <<: *default_settings
+  app_name: 'Ticket-System (Test)'
+
+production:
+  <<: *default_settings
+
+staging:
+  <<: *default_settings
+  app_name: 'Ticket-System (Staging)'
